@@ -1,0 +1,84 @@
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# IDE - JetBrains (IntelliJ, WebStorm, etc)
+.idea/
+*.iml
+*.iws
+*.ipr
+.idea_modules/
+out/
+
+# IDE - Eclipse
+.project
+.classpath
+.settings/
+bin/
+
+# IDE - Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# IDE - Xcode
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.xccheckout
+*.moved-aside
+DerivedData/
+*.hmap
+*.ipa
+*.xcuserstate
+*.xcworkspace/xcshareddata/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependencies
+node_modules/
+bower_components/
+
+# Build directories
+dist/
+build/
+out/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Misc
+.DS_Store
+Thumbs.db
+*.tmp
+*.temp
+*.bak
+*.swp
+*~.nib
+*.lock
+*.sass-cache
+.project
+.settings
+.tmproj
+*.esproj
+desktop.ini
+$RECYCLE.BIN/
+._*
