@@ -420,6 +420,7 @@ function timerTick() {
         currentTime--;
         updateTimer();
         updateProgressBar();
+        updateBadge(); // Add this line
         saveState();
     } else {
         // Switch between sitting and standing
@@ -491,6 +492,7 @@ function startTimer() {
     });
 
     saveState(true, false);
+    updateBadge(); // Add this line
 }
 
 // Pause timer
@@ -531,6 +533,7 @@ function pauseTimer() {
     }
 
     saveState(true, isPaused);
+    updateBadge(); // Add this line
 }
 
 // Reset timer
@@ -557,6 +560,10 @@ function resetTimer() {
     chrome.runtime.sendMessage({action: 'timerReset'});
 
     saveState(false, false);
+    updateBadge(); // Add this line
+    chrome.action.setBadgeText({
+        text: ""
+    });
 }
 
 // Save state to storage
@@ -567,5 +574,19 @@ function saveState(isRunning = true, isPaused = false) {
         isRunning: isRunning,
         isPaused: isPaused,
         lastUpdateTime: isPaused ? null : Date.now()
+    });
+}
+
+function updateBadge() {
+    const minutes = Math.floor(currentTime / 60);
+    const seconds = Math.floor(currentTime % 60);
+
+    chrome.action.setBadgeText({
+        text: minutes.toString() + ':' + (seconds < 10 ? '0' : '') + seconds
+    });
+
+    // Set different badge colors based on sitting/standing
+    chrome.action.setBadgeBackgroundColor({
+        color: isStanding ? '#28ed50' : '#2563eb'
     });
 }

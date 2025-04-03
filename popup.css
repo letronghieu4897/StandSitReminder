@@ -70,7 +70,7 @@ header h1 {
 
 .standing {
   background-color: #dcfce7;
-  color: #16a34a;
+  color: #28ed50;
 }
 
 .sitting {
@@ -337,4 +337,10 @@ h2 {
   color: #3b82f6;
   transform: none;
   box-shadow: none;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }
