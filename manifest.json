@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Developer Stand/Sit Reminder",
+  "name": "Stand/Sit Reminder",
   "version": "1.0",
   "description": "Reminds you to alternate between standing and sitting while working",
   "icons": {
