@@ -17,12 +17,12 @@ A Chrome extension to help you maintain a healthy work routine by reminding you 
 
 1. Download all the extension files and store them in a folder on your computer.
 2. The necessary files include:
-    - `manifest.json`
-    - `popup.html`
-    - `popup.css`
-    - `popup.js`
-    - `background.js`
-    - `/images` folder with icon files (icon16.png, icon48.png, icon128.png)
+   - `manifest.json`
+   - `popup.html`
+   - `popup.css`
+   - `popup.js`
+   - `background.js`
+   - `/images` folder with icon files (icon16.png, icon48.png, icon128.png)
 
 ### Step 2: Load the Extension in Chrome
 
@@ -89,6 +89,7 @@ Developers can modify the code to add features or customize the appearance as ne
 ## Privacy
 
 This extension:
+
 - Does not collect any personal data
 - Does not communicate with external servers
 - Stores settings and timer state only locally in your browser

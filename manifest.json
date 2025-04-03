@@ -16,11 +16,7 @@
       "128": "images/icon128.png"
     }
   },
-  "permissions": [
-    "alarms",
-    "notifications",
-    "storage"
-  ],
+  "permissions": ["alarms", "notifications", "storage"],
   "background": {
     "service_worker": "background.js"
   }
