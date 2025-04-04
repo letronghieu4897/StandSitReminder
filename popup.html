@@ -2,24 +2,24 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Stand/Sit Reminder</title>
-    <link rel="stylesheet" href="popup.css" />
+    <link href="popup.css" rel="stylesheet" />
   </head>
   <body>
     <div class="container">
       <header>
         <div class="title-container">
-          <img src="images/icon48.png" alt="Logo" class="logo" />
+          <img alt="Logo" class="logo" src="images/icon48.png" />
           <h1>Stand/Sit Reminder</h1>
         </div>
-        <button id="settingsBtn" class="icon-button" title="Settings">
+        <button class="icon-button" id="settingsBtn" title="Settings">
           <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
             fill="currentColor"
-            width="20"
             height="20"
+            viewBox="0 0 24 24"
+            width="20"
+            xmlns="http://www.w3.org/2000/svg"
           >
             <path
               d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"
@@ -51,34 +51,34 @@
         </div>
 
         <div class="controls">
-          <button id="startBtn" class="btn-primary">
+          <button class="btn-primary" id="startBtn">
             <svg
               class="button-icon"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
               fill="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
             >
               <path d="M8 5v14l11-7z" />
             </svg>
             Start
           </button>
-          <button id="pauseBtn" class="btn-warning">
+          <button class="btn-warning" id="pauseBtn">
             <svg
               class="button-icon"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
               fill="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
             >
               <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
             </svg>
             Pause
           </button>
-          <button id="resetBtn" class="btn-danger">
+          <button class="btn-danger" id="resetBtn">
             <svg
               class="button-icon"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
               fill="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
             >
               <path
                 d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"
@@ -94,14 +94,14 @@
       </div>
 
       <!-- Settings View -->
-      <div id="settingsView" class="hidden">
+      <div class="hidden" id="settingsView">
         <h2>Timer Settings</h2>
 
         <div class="settings-group">
           <label for="sitTimeInput">Sitting Time (minutes)</label>
           <div class="number-input">
             <button class="decrement" tabindex="-1">-</button>
-            <input type="number" id="sitTimeInput" min="1" max="120" value="45" />
+            <input id="sitTimeInput" max="120" min="1" type="number" value="45" />
             <button class="increment" tabindex="-1">+</button>
           </div>
         </div>
@@ -110,23 +110,34 @@
           <label for="standTimeInput">Standing Time (minutes)</label>
           <div class="number-input">
             <button class="decrement" tabindex="-1">-</button>
-            <input type="number" id="standTimeInput" min="1" max="60" value="20" />
+            <input id="standTimeInput" max="60" min="1" type="number" value="20" />
             <button class="increment" tabindex="-1">+</button>
           </div>
         </div>
 
-        <div class="settings-group checkbox-group">
-          <label class="checkbox-label">
-            <input type="checkbox" id="notificationsEnabled" checked />
-            Enable Desktop Notifications
-          </label>
-        </div>
+        <div class="settings-group">
+          <h3>Notification Settings</h3>
 
-        <div class="settings-group checkbox-group">
-          <label class="checkbox-label">
-            <input type="checkbox" id="soundEnabled" checked />
-            Enable Sound Alerts
-          </label>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input checked id="desktopNotificationsEnabled" type="checkbox" />
+              Enable Desktop Notifications
+            </label>
+          </div>
+
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input checked id="browserPopupEnabled" type="checkbox" />
+              Enable Browser Popup Notifications
+            </label>
+          </div>
+
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input checked id="soundEnabled" type="checkbox" />
+              Enable Sound Alerts
+            </label>
+          </div>
         </div>
 
         <div class="settings-note">
@@ -134,8 +145,8 @@
         </div>
 
         <div class="settings-buttons">
-          <button id="saveSettingsBtn" class="btn-primary">Save Settings</button>
-          <button id="cancelSettingsBtn" class="btn-secondary">Cancel</button>
+          <button class="btn-primary" id="saveSettingsBtn">Save Settings</button>
+          <button class="btn-secondary" id="cancelSettingsBtn">Cancel</button>
         </div>
       </div>
     </div>

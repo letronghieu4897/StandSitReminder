@@ -8,8 +8,6 @@ let isPaused = false;
 let lastUpdateTime = Date.now();
 let updateInterval;
 let initialTime; // To track the current timer's initial value for progress bar
-let notificationsEnabled = true;
-let soundEnabled = true;
 
 // DOM elements - declared as variables that will be initialized once DOM is loaded
 let timerEl;
@@ -29,7 +27,8 @@ let saveSettingsBtn;
 let cancelSettingsBtn;
 let sitTimeInput;
 let standTimeInput;
-let notificationsEnabledCheckbox;
+let desktopNotificationsEnabledCheckbox;
+let browserPopupEnabledCheckbox;
 let soundEnabledCheckbox;
 
 // Load saved state when popup opens
@@ -52,7 +51,8 @@ document.addEventListener('DOMContentLoaded', function () {
   cancelSettingsBtn = document.getElementById('cancelSettingsBtn');
   sitTimeInput = document.getElementById('sitTimeInput');
   standTimeInput = document.getElementById('standTimeInput');
-  notificationsEnabledCheckbox = document.getElementById('notificationsEnabled');
+  desktopNotificationsEnabledCheckbox = document.getElementById('desktopNotificationsEnabled');
+  browserPopupEnabledCheckbox = document.getElementById('browserPopupEnabled');
   soundEnabledCheckbox = document.getElementById('soundEnabled');
 
   // Request notification permission right away
@@ -128,7 +128,6 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // Save settings button click
-  // Save settings button click
   saveSettingsBtn.addEventListener('click', function () {
     const newSitTime = parseInt(sitTimeInput.value);
     const newStandTime = parseInt(standTimeInput.value);
@@ -140,7 +139,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Get checkbox values
-    const newNotificationsEnabled = notificationsEnabledCheckbox.checked;
+    const newDesktopNotificationsEnabled = desktopNotificationsEnabledCheckbox.checked;
+    const newBrowserPopupEnabled = browserPopupEnabledCheckbox.checked;
     const newSoundEnabled = soundEnabledCheckbox.checked;
 
     // Save the new settings
@@ -148,15 +148,14 @@ document.addEventListener('DOMContentLoaded', function () {
       {
         sittingTime: newSitTime,
         standingTime: newStandTime,
-        notificationsEnabled: newNotificationsEnabled,
+        desktopNotificationsEnabled: newDesktopNotificationsEnabled,
+        browserPopupEnabled: newBrowserPopupEnabled,
         soundEnabled: newSoundEnabled,
       },
       function () {
         // Update the global variables
         SITTING_TIME = newSitTime * 60;
         STANDING_TIME = newStandTime * 60;
-        notificationsEnabled = newNotificationsEnabled;
-        soundEnabled = newSoundEnabled;
 
         // Update the display
         sitTimeDisplay.textContent = `${newSitTime} min`;
@@ -185,8 +184,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // Reset input values to current settings
     sitTimeInput.value = SITTING_TIME / 60;
     standTimeInput.value = STANDING_TIME / 60;
-    notificationsEnabledCheckbox.checked = notificationsEnabled;
-    soundEnabledCheckbox.checked = soundEnabled;
+    desktopNotificationsEnabledCheckbox.checked = true; // Default if not saved
+    browserPopupEnabledCheckbox.checked = true; // Default if not saved
+    soundEnabledCheckbox.checked = true; // Default if not saved
 
     // Close settings view
     settingsView.classList.add('hidden');
@@ -195,6 +195,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Set up polling to sync with background timer
   updateInterval = setInterval(syncWithBackground, 1000);
+
+  // Listen for messages from notification popup
+  chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+    if (request.action === 'playSound') {
+      playAlertSound();
+    }
+    return true;
+  });
 });
 
 // Request notification permission
@@ -217,7 +225,13 @@ function requestNotificationPermission() {
 // Load preferences
 function loadPreferences() {
   chrome.storage.local.get(
-    ['sittingTime', 'standingTime', 'notificationsEnabled', 'soundEnabled'],
+    [
+      'sittingTime',
+      'standingTime',
+      'desktopNotificationsEnabled',
+      'browserPopupEnabled',
+      'soundEnabled',
+    ],
     function (result) {
       // Load timer durations
       if (result.sittingTime) {
@@ -233,15 +247,16 @@ function loadPreferences() {
       }
 
       // Load notification preferences
-      if (result.notificationsEnabled !== undefined) {
-        notificationsEnabled = result.notificationsEnabled;
-        notificationsEnabledCheckbox.checked = notificationsEnabled;
+      if (result.desktopNotificationsEnabled !== undefined) {
+        desktopNotificationsEnabledCheckbox.checked = result.desktopNotificationsEnabled;
       }
 
-      // Load sound preferences
+      if (result.browserPopupEnabled !== undefined) {
+        browserPopupEnabledCheckbox.checked = result.browserPopupEnabled;
+      }
+
       if (result.soundEnabled !== undefined) {
-        soundEnabled = result.soundEnabled;
-        soundEnabledCheckbox.checked = soundEnabled;
+        soundEnabledCheckbox.checked = result.soundEnabled;
       }
 
       // Update cycle display
@@ -350,9 +365,9 @@ function updateProgressBar() {
 
 // Show local notification
 function showNotification(title, message) {
-  if (!notificationsEnabled) return;
+  if (!desktopNotificationsEnabledCheckbox.checked) return;
 
-  // First try the chrome.notifications API
+  // Try to use chrome.notifications API
   if (chrome.notifications) {
     try {
       chrome.notifications.create(
@@ -367,62 +382,55 @@ function showNotification(title, message) {
         },
         function (notificationId) {
           console.log('Notification created with ID:', notificationId);
-          // If there was an error creating the notification, the callback might not run
           if (chrome.runtime.lastError) {
             console.error('Notification error:', chrome.runtime.lastError);
-            fallbackNotification(title, message);
           }
         }
       );
     } catch (error) {
-      console.error('Error showing Chrome notification:', error);
-      fallbackNotification(title, message);
+      console.error('Error showing notification:', error);
     }
   } else {
-    fallbackNotification(title, message);
-  }
-}
-
-// Fallback to Web Notifications API
-function fallbackNotification(title, message) {
-  if (!window.Notification) {
-    console.error('Notifications not supported in this browser');
-    return;
-  }
-
-  if (Notification.permission === 'granted') {
-    try {
-      const notification = new Notification(title, {
+    // Fallback to regular Web Notifications
+    if (Notification && Notification.permission === 'granted') {
+      new Notification(title, {
         body: message,
         icon: 'images/icon128.png',
       });
-      notification.onclick = function () {
-        window.focus();
-      };
-    } catch (error) {
-      console.error('Error showing fallback notification:', error);
     }
-  } else if (Notification.permission !== 'denied') {
-    Notification.requestPermission().then(function (permission) {
-      if (permission === 'granted') {
-        fallbackNotification(title, message);
-      }
-    });
   }
 }
 
 // Play alert sound
 function playAlertSound() {
-  if (!soundEnabled) return;
+  if (!soundEnabledCheckbox.checked) return;
 
   try {
-    const audio = new Audio('sounds/alert.mp3'); // Add this file to your extension
-    audio.volume = 0.5;
-    audio.play().catch(error => {
-      console.error('Error playing audio file:', error);
-    });
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.type = 'sine';
+    oscillator.frequency.value = 800; // frequency in hertz
+    gainNode.gain.value = 0.3; // volume control
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.start();
+
+    // Stop after 500ms
+    setTimeout(function () {
+      oscillator.stop();
+      // Optional: close the audio context to free resources
+      if (audioContext.state !== 'closed') {
+        audioContext.close();
+      }
+    }, 500);
+
+    console.log('Sound alert played successfully');
   } catch (error) {
-    console.error('Error setting up audio:', error);
+    console.error('Error playing alert sound:', error);
   }
 }
 
@@ -432,7 +440,6 @@ function timerTick() {
     currentTime--;
     updateTimer();
     updateProgressBar();
-    updateBadge(); // Add this line
     saveState();
   } else {
     // Switch between sitting and standing
@@ -449,35 +456,16 @@ function timerTick() {
       ? `Stand for ${STANDING_TIME / 60} minutes`
       : `Sit for ${SITTING_TIME / 60} minutes`;
 
-    // 1. Try our own notification function
     showNotification(title, message);
-
-    // 2. Play sound (this often helps alert users even if notifications fail)
     playAlertSound();
 
-    // 3. Send message to background script as backup notification method
-    chrome.runtime.sendMessage(
-      {
-        action: 'showNotification',
-        title: title,
-        message: message,
-      },
-      function (response) {
-        // Check if message was received
-        if (chrome.runtime.lastError) {
-          console.error('Error sending message to background:', chrome.runtime.lastError);
-          // Try one more notification approach as final fallback
-          try {
-            alert(title + '\n' + message);
-          } catch (e) {
-            console.error('Alert fallback failed:', e);
-          }
-        }
-      }
-    );
-
-    // 4. Log to console for debugging
-    console.log('TIMER ENDED: ' + title + ' - ' + message);
+    // Also send message to background script
+    chrome.runtime.sendMessage({
+      action: 'timerEnded',
+      isStanding: isStanding,
+      standingTime: STANDING_TIME,
+      sittingTime: SITTING_TIME,
+    });
   }
 }
 
@@ -507,7 +495,6 @@ function startTimer() {
   });
 
   saveState(true, false);
-  updateBadge(); // Add this line
 }
 
 // Pause timer
@@ -548,7 +535,6 @@ function pauseTimer() {
   }
 
   saveState(true, isPaused);
-  updateBadge(); // Add this line
 }
 
 // Reset timer
@@ -575,10 +561,6 @@ function resetTimer() {
   chrome.runtime.sendMessage({ action: 'timerReset' });
 
   saveState(false, false);
-  updateBadge(); // Add this line
-  chrome.action.setBadgeText({
-    text: '',
-  });
 }
 
 // Save state to storage
@@ -589,19 +571,5 @@ function saveState(isRunning = true, isPaused = false) {
     isRunning: isRunning,
     isPaused: isPaused,
     lastUpdateTime: isPaused ? null : Date.now(),
-  });
-}
-
-function updateBadge() {
-  const minutes = Math.floor(currentTime / 60);
-  const seconds = Math.floor(currentTime % 60);
-
-  chrome.action.setBadgeText({
-    text: minutes.toString() + ':' + (seconds < 10 ? '0' : '') + seconds,
-  });
-
-  // Set different badge colors based on sitting/standing
-  chrome.action.setBadgeBackgroundColor({
-    color: isStanding ? '#28ed50' : '#2563eb',
   });
 }
