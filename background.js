@@ -77,6 +77,27 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       // Send response back to confirm receipt
       sendResponse({ success: true });
       break;
+
+    case 'modeSwitched':
+      console.log(
+        'Background received mode switch, new mode:',
+        request.isStanding ? 'Standing' : 'Sitting'
+      );
+
+      // Update background state
+      isStanding = request.isStanding;
+      currentTime = request.currentTime;
+
+      // Update storage
+      chrome.storage.local.set({
+        isStanding: isStanding,
+        currentTime: currentTime,
+        lastUpdateTime: Date.now(),
+      });
+
+      // Update badge
+      updateBadgeInBackground(currentTime, isStanding);
+      break;
   }
 
   // Return true for async response

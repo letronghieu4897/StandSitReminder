@@ -31,6 +31,9 @@ let desktopNotificationsEnabledCheckbox;
 let browserPopupEnabledCheckbox;
 let soundEnabledCheckbox;
 
+let switchModeBtn;
+let switchModeText;
+
 // Load saved state when popup opens
 document.addEventListener('DOMContentLoaded', function () {
   // Initialize DOM elements
@@ -54,6 +57,8 @@ document.addEventListener('DOMContentLoaded', function () {
   desktopNotificationsEnabledCheckbox = document.getElementById('desktopNotificationsEnabled');
   browserPopupEnabledCheckbox = document.getElementById('browserPopupEnabled');
   soundEnabledCheckbox = document.getElementById('soundEnabled');
+  switchModeBtn = document.getElementById('switchModeBtn');
+  switchModeText = document.getElementById('switchModeText');
 
   // Request notification permission right away
   requestNotificationPermission();
@@ -120,6 +125,9 @@ document.addEventListener('DOMContentLoaded', function () {
   startBtn.addEventListener('click', startTimer);
   pauseBtn.addEventListener('click', pauseTimer);
   resetBtn.addEventListener('click', resetTimer);
+  switchModeBtn.addEventListener('click', switchMode);
+
+  updateSwitchButton();
 
   // Settings button click
   settingsBtn.addEventListener('click', function () {
@@ -137,6 +145,8 @@ document.addEventListener('DOMContentLoaded', function () {
       alert('Please enter valid times: Sitting (1-120 minutes) and Standing (1-60 minutes)');
       return;
     }
+
+    switchModeBtn.addEventListener('click', switchMode);
 
     // Get checkbox values
     const newDesktopNotificationsEnabled = desktopNotificationsEnabledCheckbox.checked;
@@ -354,6 +364,9 @@ function updateTimer() {
     actionEl.className = 'action sitting';
     nextActionEl.textContent = `Next: Stand up in ${formatTime(currentTime)}`;
   }
+
+  // Update switch button
+  updateSwitchButton();
 }
 
 // Update progress bar
@@ -572,4 +585,48 @@ function saveState(isRunning = true, isPaused = false) {
     isPaused: isPaused,
     lastUpdateTime: isPaused ? null : Date.now(),
   });
+}
+
+function switchMode() {
+  console.log('Switching mode from:', isStanding ? 'Standing' : 'Sitting');
+
+  // Toggle standing/sitting mode
+  isStanding = !isStanding;
+
+  // Update the current time to the appropriate duration for the new mode
+  currentTime = isStanding ? STANDING_TIME : SITTING_TIME;
+  initialTime = currentTime;
+
+  console.log('Mode switched to:', isStanding ? 'Standing' : 'Sitting');
+
+  // Update UI
+  updateTimer();
+  updateProgressBar();
+  updateSwitchButton();
+
+  // Save state
+  saveState(true, isPaused);
+
+  // Inform background script
+  chrome.runtime.sendMessage({
+    action: 'modeSwitched',
+    isStanding: isStanding,
+    currentTime: currentTime,
+  });
+}
+
+function updateSwitchButton() {
+  if (!switchModeText) return; // Safety check
+
+  // Show the opposite action of the current state
+  switchModeText.textContent = isStanding ? ' SIT DOWN' : ' STAND UP';
+
+  // Update button styling based on the next mode
+  if (isStanding) {
+    // Next mode would be sitting
+    switchModeBtn.className = 'btn-switch btn-sitting';
+  } else {
+    // Next mode would be standing
+    switchModeBtn.className = 'btn-switch btn-standing';
+  }
 }
