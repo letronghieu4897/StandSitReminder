@@ -1,94 +1,54 @@
-# Stand/Sit Reminder Chrome Extension
+# Standuck
 
-A Chrome extension to help you maintain a healthy work routine by reminding you to alternate between sitting and
-standing positions.
+A friendly browser extension that helps you maintain a healthy work routine by reminding you to alternate between sitting and standing positions.
+
+![Standuck Logo](images/icon128.png)
 
 ## Features
 
-- ⏱️ Customizable sitting and standing durations
-- 🔔 Desktop notifications when it's time to change position
-- 🪟 Browser popup notifications with click-to-dismiss functionality
-- 🔊 Optional sound alerts
-- 📊 Visual progress tracking with timer
-- 🔄 Continues running in the background even when Chrome is minimized
-- 🏷️ Shows countdown timer directly on the extension icon
+- 🦆 Simple and intuitive interface with a cute duck mascot
+- ⏱️ Customizable sitting and standing time intervals
+- 🔄 Easy switching between sitting and standing modes
+- 📊 Visual timer with countdown display
+- 🔔 Multiple notification options:
+  - Desktop notifications
+  - Browser popup alerts
+  - Sound alerts
+
+## How It Works
+
+1. **Set Your Schedule**: Customize your preferred sitting (1-120 minutes) and standing (1-60 minutes) durations
+2. **Start Timer**: Click the Start button to begin your cycle
+3. **Get Notified**: Receive notifications when it's time to switch positions
+4. **Track Progress**: Visual timer shows your progress in the current position
+
+## Default Settings
+
+- Sitting Time: 45 minutes
+- Standing Time: 20 minutes
+- Notifications: All enabled by default
+
+## Controls
+
+- **Start/Pause**: Control your timer
+- **Reset**: Reset the current timer
+- **Switch Mode**: Quickly switch between sitting and standing modes
+- **Settings**: Customize your timings and notification preferences
 
 ## Installation
 
-### Step 1: Download the Files
+1. Download the extension from the Chrome Web Store (link coming soon)
+2. Click "Add to Chrome"
+3. The Standuck icon will appear in your browser toolbar
 
-1. Download all the extension files and store them in a folder on your computer.
-2. The necessary files include:
-   - `manifest.json`
-   - `popup.html`, `popup.css`, `popup.js`
-   - `background.js`
-   - `notification-popup.html`, `notification-popup.css`, `notification-popup.js`
-   - `/images` folder with icon files (icon16.png, icon48.png, icon128.png)
+## Privacy
 
-### Step 2: Load the Extension in Chrome
+Standuck operates entirely in your browser and doesn't collect any personal data. All settings are stored locally.
 
-1. Open Chrome and navigate to `chrome://extensions/`
-2. Enable "Developer mode" by toggling the switch in the top-right corner
-3. Click "Load unpacked"
-4. Select the folder containing the extension files
-5. The extension should now appear in your extensions list
+## Contributing
 
-### Step 3: Pin to Chrome Toolbar
+Feel free to submit issues and enhancement requests!
 
-1. Click the puzzle piece icon in Chrome's toolbar
-2. Find "Stand/Sit Reminder" in the dropdown
-3. Click the pin icon to keep it visible in your toolbar for easy access
+## License
 
-## Using the Extension
-
-### Basic Operation
-
-1. **Start Timer**: Click the "Start" button to begin the timer cycle (default is 45 minutes sitting, 20 minutes
-   standing)
-2. **Pause/Resume**: Click the "Pause" button if you need to temporarily stop the timer
-3. **Reset**: Click the "Reset" button to start a fresh cycle
-
-### Notification System
-
-When a timer cycle completes:
-
-1. A browser popup notification appears that requires your acknowledgment
-2. Click anywhere on the notification to dismiss it and continue to the next cycle
-3. The timer pauses until you acknowledge the notification
-
-### Customizing Settings
-
-1. Click the gear icon (⚙️) in the upper right corner to access settings
-2. Adjust the sitting and standing durations to your preference
-3. Enable or disable different notification types:
-   - Desktop notifications (system notifications)
-   - Browser popup notifications (custom in-browser popups)
-   - Sound alerts
-4. Click "Save Settings" to apply your changes
-
-## Troubleshooting
-
-### Notifications Not Working
-
-1. Make sure you've allowed notifications for this extension
-2. Check Chrome's notification settings (Settings > Privacy and Security > Site Settings > Notifications)
-3. Ensure you have at least one notification type enabled in the extension settings
-
-### Timer Stops or Behaves Unexpectedly
-
-1. Check the console for error messages (right-click the extension popup, select "Inspect", go to Console tab)
-2. Make sure Chrome is not suspending the extension due to inactivity or power saving
-3. Try reinstalling the extension
-
-### Extension Not Visible
-
-1. Check if the extension is enabled in chrome://extensions/
-2. Pin it to your toolbar using the puzzle piece icon
-
-## Development
-
-### File Structure
-
-- `manifest.json` - Extension configuration
-- `popup.html/css/js` - Main interface and controls
-- `background.js` - Background service worker for notifications and timer
+MIT License - feel free to use and modify as you like!
