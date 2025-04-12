@@ -13,8 +13,7 @@ let initialTime; // To track the current timer's initial value for progress bar
 let timerEl;
 let actionEl;
 let nextActionEl;
-let startBtn;
-let pauseBtn;
+let startPauseBtn;
 let resetBtn;
 let progressBar;
 let sitTimeDisplay;
@@ -34,13 +33,14 @@ let soundEnabledCheckbox;
 let switchModeBtn;
 let switchModeText;
 
+let isRunning = false;
+
 // Load saved state when popup opens
 document.addEventListener('DOMContentLoaded', function () {
   // Initialize DOM elements
   timerEl = document.getElementById('timer');
   actionEl = document.getElementById('currentAction');
-  startBtn = document.getElementById('startBtn');
-  pauseBtn = document.getElementById('pauseBtn');
+  startPauseBtn = document.getElementById('startPauseBtn');
   resetBtn = document.getElementById('resetBtn');
   progressBar = document.getElementById('progressBar');
   sitTimeDisplay = document.getElementById('sitTimeDisplay');
@@ -76,6 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
         currentTime = result.currentTime;
         isStanding = result.isStanding || false;
         isPaused = result.isPaused || false;
+        isRunning = result.isRunning || false;
 
         // If timer is running but not paused, calculate elapsed time since last update
         if (result.isRunning && !result.isPaused && result.lastUpdateTime) {
@@ -98,35 +99,55 @@ document.addEventListener('DOMContentLoaded', function () {
         updateProgressBar();
 
         if (result.isRunning && !result.isPaused) {
-          startTimer();
-          startBtn.disabled = true;
-        } else if (result.isRunning && isPaused) {
-          pauseBtn.innerHTML = `
-          <svg class="button-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M8 5v14l11-7z"/>
-          </svg>
-          Resume
-        `;
-          pauseBtn.classList.add('paused');
-          startBtn.disabled = true;
+          isRunning = true;
+          startPauseBtn.classList.add('paused');
+          startPauseBtn.innerHTML = '<span class="button-icon">⏸</span>Pause';
+          // Start interval for UI updates without starting a new timer
+          interval = setInterval(timerTick, 1000);
+        } else if (result.isRunning && result.isPaused) {
+          isRunning = true;
+          isPaused = true;
+          startPauseBtn.classList.remove('paused');
+          startPauseBtn.innerHTML = '<span class="button-icon">▶</span>Start';
+          resetBtn.disabled = false;
         } else {
-          pauseBtn.disabled = true;
+          isRunning = false;
+          isPaused = false;
           resetBtn.disabled = true;
+          startPauseBtn.classList.remove('paused');
+          startPauseBtn.innerHTML = '<span class="button-icon">▶</span>Start';
         }
       } else {
-        pauseBtn.disabled = true;
         resetBtn.disabled = true;
       }
     }
   );
 
   // Set up event listeners
-  startBtn.addEventListener('click', startTimer);
-  pauseBtn.addEventListener('click', pauseTimer);
-  resetBtn.addEventListener('click', resetTimer);
-  switchModeBtn.addEventListener('click', switchMode);
+  startPauseBtn.addEventListener('click', () => {
+    if (!isRunning) {
+      // Start the timer
+      isRunning = true;
+      startPauseBtn.classList.add('paused');
+      startPauseBtn.innerHTML = '<span class="button-icon">⏸</span>Pause';
+      startTimer();
+    } else {
+      // Pause the timer
+      isRunning = false;
+      startPauseBtn.classList.remove('paused');
+      startPauseBtn.innerHTML = '<span class="button-icon">▶</span>Start';
+      pauseTimer();
+    }
+  });
 
-  updateSwitchButton();
+  resetBtn.addEventListener('click', () => {
+    isRunning = false;
+    startPauseBtn.classList.remove('paused');
+    startPauseBtn.innerHTML = '<span class="button-icon">▶</span>Start';
+    resetTimer();
+  });
+
+  switchModeBtn.addEventListener('click', switchMode);
 
   // Settings button click
   settingsBtn.addEventListener('click', function () {
@@ -317,26 +338,28 @@ window.addEventListener('unload', function () {
 
 // Sync with background timer
 function syncWithBackground() {
-  chrome.storage.local.get(
-    ['currentTime', 'isStanding', 'isRunning', 'isPaused'],
-    function (result) {
-      if (result.isRunning && !result.isPaused) {
-        // Only update the UI if values are different
-        if (result.currentTime !== currentTime || result.isStanding !== isStanding) {
-          currentTime = result.currentTime;
-          isStanding = result.isStanding;
-          // Update initialTime when mode changes
-          if (isStanding && initialTime === SITTING_TIME) {
-            initialTime = STANDING_TIME;
-          } else if (!isStanding && initialTime === STANDING_TIME) {
-            initialTime = SITTING_TIME;
+  if (!isRunning || isPaused) {
+    chrome.storage.local.get(
+      ['currentTime', 'isStanding', 'isRunning', 'isPaused'],
+      function (result) {
+        if (result.isRunning && !result.isPaused) {
+          // Only update the UI if values are different
+          if (result.currentTime !== currentTime || result.isStanding !== isStanding) {
+            currentTime = result.currentTime;
+            isStanding = result.isStanding;
+            // Update initialTime when mode changes
+            if (isStanding && initialTime === SITTING_TIME) {
+              initialTime = STANDING_TIME;
+            } else if (!isStanding && initialTime === STANDING_TIME) {
+              initialTime = SITTING_TIME;
+            }
+            updateTimer();
+            updateProgressBar();
           }
-          updateTimer();
-          updateProgressBar();
         }
       }
-    }
-  );
+    );
+  }
 }
 
 // Format time function
@@ -350,11 +373,9 @@ function formatTime(seconds) {
 function updateTimer() {
   timerEl.textContent = formatTime(currentTime);
   if (isStanding) {
-    actionEl.textContent = 'STAND UP!';
-    actionEl.className = 'action standing';
+    timerEl.className = 'timer standing';
   } else {
-    actionEl.textContent = 'SIT DOWN';
-    actionEl.className = 'action sitting';
+    timerEl.className = 'timer sitting';
   }
 
   // Update switch button
@@ -489,16 +510,7 @@ function timerTick() {
 function startTimer() {
   clearInterval(interval);
   interval = setInterval(timerTick, 1000);
-  startBtn.disabled = true;
-  pauseBtn.disabled = false;
   resetBtn.disabled = false;
-  pauseBtn.innerHTML = `
-    <svg class="button-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-    </svg>
-    Pause
-  `;
-  pauseBtn.classList.remove('paused');
   isPaused = false;
   lastUpdateTime = Date.now();
   initialTime = isStanding ? STANDING_TIME : SITTING_TIME;
@@ -515,40 +527,16 @@ function startTimer() {
 
 // Pause timer
 function pauseTimer() {
-  if (isPaused) {
-    interval = setInterval(timerTick, 1000);
-    pauseBtn.innerHTML = `
-      <svg class="button-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-      </svg>
-      Pause
-    `;
-    pauseBtn.classList.remove('paused');
-    isPaused = false;
-    lastUpdateTime = Date.now();
+  clearInterval(interval);
+  startPauseBtn.classList.remove('paused');
+  startPauseBtn.innerHTML = '<span class="button-icon">▶</span>Start';
+  isPaused = true;
+  lastUpdateTime = Date.now();
 
-    // Inform background script to resume
-    chrome.runtime.sendMessage({
-      action: 'timerResumed',
-      currentTime: currentTime,
-      isStanding: isStanding,
-    });
-  } else {
-    clearInterval(interval);
-    pauseBtn.innerHTML = `
-      <svg class="button-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M8 5v14l11-7z"/>
-      </svg>
-      Resume
-    `;
-    pauseBtn.classList.add('paused');
-    isPaused = true;
-
-    // Inform background script to pause
-    chrome.runtime.sendMessage({
-      action: 'timerPaused',
-    });
-  }
+  // Inform background script to pause
+  chrome.runtime.sendMessage({
+    action: 'timerPaused',
+  });
 
   saveState(true, isPaused);
 }
@@ -556,21 +544,15 @@ function pauseTimer() {
 // Reset timer
 function resetTimer() {
   clearInterval(interval);
-  isStanding = false;
-  currentTime = SITTING_TIME;
-  initialTime = SITTING_TIME;
+  // Keep the current mode (standing or sitting)
+  currentTime = isStanding ? STANDING_TIME : SITTING_TIME;
+  initialTime = currentTime;
   updateTimer();
   updateProgressBar();
-  startBtn.disabled = false;
-  pauseBtn.disabled = true;
+  startPauseBtn.disabled = false;
   resetBtn.disabled = true;
-  pauseBtn.innerHTML = `
-    <svg class="button-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-    </svg>
-    Pause
-  `;
-  pauseBtn.classList.remove('paused');
+  startPauseBtn.classList.remove('paused');
+  startPauseBtn.innerHTML = '<span class="button-icon">▶</span>Start';
   isPaused = false;
 
   // Inform background script that timer is reset

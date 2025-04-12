@@ -10,7 +10,6 @@ body {
   width: 340px;
   margin: 0;
   padding: 0;
-  background-color: #f9fafb;
   color: #111827;
   line-height: 1.5;
 }
@@ -18,10 +17,6 @@ body {
 .container {
   border-radius: 12px;
   padding: 20px;
-  box-shadow:
-    0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
 }
 
 header {
@@ -109,11 +104,9 @@ header h1 {
 }
 
 .timer-container {
-  background-color: #f8fafc;
   border-radius: 12px;
   padding: 20px;
   text-align: center;
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.05);
   margin-bottom: 20px;
   position: relative;
 }
@@ -136,49 +129,29 @@ header h1 {
   transform: rotate(-90deg);
   width: 100%;
   height: 100%;
+  display: none;
 }
 
 .timer-background {
-  fill: none;
-  stroke: #e2e8f0;
-  stroke-width: 6;
+  display: none;
 }
 
 .timer-progress {
-  fill: none;
-  stroke: #2563eb;
-  stroke-width: 6;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 0.3s ease;
-  filter: drop-shadow(0 0 4px rgba(37, 99, 235, 0.3));
+  display: none;
 }
 
 .progress-point {
-  fill: #2563eb;
-  transition: transform 0.3s ease;
-  transform-origin: 50px 50px;
-  r: 3;
-  filter: drop-shadow(0 0 2px rgba(37, 99, 235, 0.5));
+  display: none;
 }
 
-.standing .timer-progress {
-  stroke: #1ee869;
-  filter: drop-shadow(0 0 4px rgba(30, 232, 105, 0.3));
+.timer.sitting, .sitting .timer-progress, .sitting .progress-point {
+  color: #ef4444;
+  filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.3));
 }
 
-.standing .progress-point {
-  fill: #1ee869;
-  filter: drop-shadow(0 0 2px rgba(30, 232, 105, 0.5));
-}
-
-.sitting .timer-progress {
-  stroke: #2563eb;
-  filter: drop-shadow(0 0 4px rgba(37, 99, 235, 0.3));
-}
-
-.sitting .progress-point {
-  fill: #2563eb;
-  filter: drop-shadow(0 0 2px rgba(37, 99, 235, 0.5));
+.timer.standing, .standing .timer-progress, .standing .progress-point {
+  color: #22c55e;
+  filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.3));
 }
 
 .timer {
@@ -186,12 +159,26 @@ header h1 {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 28px;
+  font-size: 48px;
   font-weight: 700;
-  color: #2563eb;
+  color: #ef4444;
   font-variant-numeric: tabular-nums;
   letter-spacing: 2px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+
+.timer.sitting {
+  color: #ef4444;
+  background: none;
+  border: none;
+}
+
+.timer.standing {
+  color: #22c55e;
+  background: none;
+  border: none;
 }
 
 .action {
@@ -225,7 +212,7 @@ header h1 {
 
 .controls {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
   margin: 24px 0;
 }
@@ -486,4 +473,17 @@ h3 {
 
 .btn-sitting:hover:not(:disabled) {
   background-color: #2563eb;
+}
+
+#startPauseBtn.paused {
+  background-color: #f59e0b;
+  border: 2px solid #d97706;
+}
+
+#startPauseBtn.paused:hover:not(:disabled) {
+  background-color: #d97706;
+}
+
+#startPauseBtn.paused .button-icon {
+  content: "⏸";
 }
