@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Stand/Sit Reminder",
+  "name": "Standuck",
   "version": "1.0",
   "description": "Reminds you to alternate between standing and sitting while working",
   "icons": {
@@ -11,8 +11,8 @@
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "images/icon16.png",
-      "48": "images/icon48.png",
+      "16": "images/icon48.png",
+      "48": "images/icon128.png",
       "128": "images/icon128.png"
     }
   },

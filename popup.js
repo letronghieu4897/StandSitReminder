@@ -39,7 +39,6 @@ document.addEventListener('DOMContentLoaded', function () {
   // Initialize DOM elements
   timerEl = document.getElementById('timer');
   actionEl = document.getElementById('currentAction');
-  nextActionEl = document.getElementById('nextAction');
   startBtn = document.getElementById('startBtn');
   pauseBtn = document.getElementById('pauseBtn');
   resetBtn = document.getElementById('resetBtn');
@@ -146,8 +145,6 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    switchModeBtn.addEventListener('click', switchMode);
-
     // Get checkbox values
     const newDesktopNotificationsEnabled = desktopNotificationsEnabledCheckbox.checked;
     const newBrowserPopupEnabled = browserPopupEnabledCheckbox.checked;
@@ -167,18 +164,6 @@ document.addEventListener('DOMContentLoaded', function () {
         SITTING_TIME = newSitTime * 60;
         STANDING_TIME = newStandTime * 60;
 
-        // Update the display
-        sitTimeDisplay.textContent = `${newSitTime} min`;
-        standTimeDisplay.textContent = `${newStandTime} min`;
-
-        // If timer isn't running, also update the current time to match the new sitting time
-        if (!startBtn.disabled) {
-          currentTime = SITTING_TIME;
-          initialTime = SITTING_TIME;
-          updateTimer();
-          updateProgressBar();
-        }
-
         // Update cycle display text
         updateCycleDisplay();
 
@@ -192,15 +177,23 @@ document.addEventListener('DOMContentLoaded', function () {
   // Cancel settings button click
   cancelSettingsBtn.addEventListener('click', function () {
     // Reset input values to current settings
-    sitTimeInput.value = SITTING_TIME / 60;
-    standTimeInput.value = STANDING_TIME / 60;
-    desktopNotificationsEnabledCheckbox.checked = true; // Default if not saved
-    browserPopupEnabledCheckbox.checked = true; // Default if not saved
-    soundEnabledCheckbox.checked = true; // Default if not saved
+    chrome.storage.local.get(
+      ['sittingTime', 'standingTime', 'desktopNotificationsEnabled', 'browserPopupEnabled', 'soundEnabled'],
+      function (result) {
+        sitTimeInput.value = result.sittingTime || 45;
+        standTimeInput.value = result.standingTime || 20;
+        desktopNotificationsEnabledCheckbox.checked = result.desktopNotificationsEnabled !== undefined ? 
+          result.desktopNotificationsEnabled : true;
+        browserPopupEnabledCheckbox.checked = result.browserPopupEnabled !== undefined ? 
+          result.browserPopupEnabled : true;
+        soundEnabledCheckbox.checked = result.soundEnabled !== undefined ? 
+          result.soundEnabled : true;
 
-    // Close settings view
-    settingsView.classList.add('hidden');
-    mainView.classList.remove('hidden');
+        // Close settings view
+        settingsView.classList.add('hidden');
+        mainView.classList.remove('hidden');
+      }
+    );
   });
 
   // Set up polling to sync with background timer
@@ -247,27 +240,28 @@ function loadPreferences() {
       if (result.sittingTime) {
         SITTING_TIME = result.sittingTime * 60; // Convert minutes to seconds
         sitTimeInput.value = result.sittingTime;
-        sitTimeDisplay.textContent = `${result.sittingTime} min`;
+      } else {
+        // Set default values if not found
+        SITTING_TIME = 45 * 60;
+        sitTimeInput.value = 45;
       }
 
       if (result.standingTime) {
         STANDING_TIME = result.standingTime * 60; // Convert minutes to seconds
         standTimeInput.value = result.standingTime;
-        standTimeDisplay.textContent = `${result.standingTime} min`;
+      } else {
+        // Set default values if not found
+        STANDING_TIME = 20 * 60;
+        standTimeInput.value = 20;
       }
 
       // Load notification preferences
-      if (result.desktopNotificationsEnabled !== undefined) {
-        desktopNotificationsEnabledCheckbox.checked = result.desktopNotificationsEnabled;
-      }
-
-      if (result.browserPopupEnabled !== undefined) {
-        browserPopupEnabledCheckbox.checked = result.browserPopupEnabled;
-      }
-
-      if (result.soundEnabled !== undefined) {
-        soundEnabledCheckbox.checked = result.soundEnabled;
-      }
+      desktopNotificationsEnabledCheckbox.checked = result.desktopNotificationsEnabled !== undefined ? 
+        result.desktopNotificationsEnabled : true;
+      browserPopupEnabledCheckbox.checked = result.browserPopupEnabled !== undefined ? 
+        result.browserPopupEnabled : true;
+      soundEnabledCheckbox.checked = result.soundEnabled !== undefined ? 
+        result.soundEnabled : true;
 
       // Update cycle display
       updateCycleDisplay();
@@ -358,11 +352,9 @@ function updateTimer() {
   if (isStanding) {
     actionEl.textContent = 'STAND UP!';
     actionEl.className = 'action standing';
-    nextActionEl.textContent = `Next: Sit down in ${formatTime(currentTime)}`;
   } else {
     actionEl.textContent = 'SIT DOWN';
     actionEl.className = 'action sitting';
-    nextActionEl.textContent = `Next: Stand up in ${formatTime(currentTime)}`;
   }
 
   // Update switch button
@@ -373,7 +365,18 @@ function updateTimer() {
 function updateProgressBar() {
   const totalTime = isStanding ? STANDING_TIME : SITTING_TIME;
   const percentage = (currentTime / totalTime) * 100;
-  progressBar.style.width = `${percentage}%`;
+  const circumference = 2 * Math.PI * 45; // 2πr where r = 45
+  const offset = circumference - (percentage / 100) * circumference;
+  
+  const progressCircle = document.querySelector('.timer-progress');
+  const progressPoint = document.querySelector('.progress-point');
+  
+  progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+  progressCircle.style.strokeDashoffset = offset;
+  
+  // Calculate rotation angle for the progress point
+  const angle = (percentage / 100) * 360;
+  progressPoint.style.transform = `rotate(${angle}deg)`;
 }
 
 // Show local notification

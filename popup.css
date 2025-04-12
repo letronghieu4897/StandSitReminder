@@ -32,21 +32,80 @@ header {
 }
 
 header h1 {
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 600;
   margin: 0;
   color: #111827;
 }
 
 .logo {
-  width: 28px;
-  height: 28px;
+  width: 76px;
+  height: 76px;
   margin-right: 12px;
 }
 
 .title-container {
   display: flex;
   align-items: center;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-settings {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  padding: 0;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  width: 40px;
+  height: 40px;
+}
+
+.btn-settings:hover {
+  background-color: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+.btn-switch {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  padding: 0;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  width: 40px;
+  height: 40px;
+}
+
+.btn-switch:hover {
+  background-color: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+.btn-switch .button-icon {
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  color: #4b5563;
+}
+
+.btn-settings .button-icon {
+  width: 24px;
+  height: 24px;
+  margin: 0;
 }
 
 .timer-container {
@@ -56,35 +115,106 @@ header h1 {
   text-align: center;
   box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.05);
   margin-bottom: 20px;
+  position: relative;
+}
+
+.timer-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 15px 0;
+  position: relative;
+}
+
+.timer-circle {
+  position: relative;
+  width: 150px;
+  height: 150px;
+}
+
+.timer-svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+
+.timer-background {
+  fill: none;
+  stroke: #e2e8f0;
+  stroke-width: 6;
+}
+
+.timer-progress {
+  fill: none;
+  stroke: #2563eb;
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.3s ease;
+  filter: drop-shadow(0 0 4px rgba(37, 99, 235, 0.3));
+}
+
+.progress-point {
+  fill: #2563eb;
+  transition: transform 0.3s ease;
+  transform-origin: 50px 50px;
+  r: 3;
+  filter: drop-shadow(0 0 2px rgba(37, 99, 235, 0.5));
+}
+
+.standing .timer-progress {
+  stroke: #1ee869;
+  filter: drop-shadow(0 0 4px rgba(30, 232, 105, 0.3));
+}
+
+.standing .progress-point {
+  fill: #1ee869;
+  filter: drop-shadow(0 0 2px rgba(30, 232, 105, 0.5));
+}
+
+.sitting .timer-progress {
+  stroke: #2563eb;
+  filter: drop-shadow(0 0 4px rgba(37, 99, 235, 0.3));
+}
+
+.sitting .progress-point {
+  fill: #2563eb;
+  filter: drop-shadow(0 0 2px rgba(37, 99, 235, 0.5));
 }
 
 .timer {
-  font-size: 52px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 28px;
   font-weight: 700;
-  margin: 12px 0;
   color: #2563eb;
   font-variant-numeric: tabular-nums;
   letter-spacing: 2px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .action {
   font-size: 20px;
   font-weight: 600;
   margin: 5px 0 15px;
-  padding: 10px;
+  padding: 12px;
   border-radius: 8px;
   text-transform: uppercase;
   letter-spacing: 1px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .standing {
   background-color: #dcfce7;
   color: #1ee869;
+  border: 2px solid #1ee869;
 }
 
 .sitting {
   background-color: #dbeafe;
   color: #2563eb;
+  border: 2px solid #2563eb;
 }
 
 .next-action {
@@ -111,6 +241,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 button:disabled {
@@ -121,27 +252,30 @@ button:disabled {
 .btn-primary {
   background-color: #2563eb;
   color: white;
+  border: 2px solid #1d4ed8;
 }
 
 .btn-primary:hover:not(:disabled) {
   background-color: #1d4ed8;
   transform: translateY(-1px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
 }
 
 .btn-warning {
   background-color: #f59e0b;
   color: white;
+  border: 2px solid #d97706;
 }
 
 .btn-warning:hover:not(:disabled) {
   background-color: #d97706;
   transform: translateY(-1px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
 }
 
 .btn-warning.paused {
   background-color: #3b82f6;
+  border: 2px solid #2563eb;
 }
 
 .btn-warning.paused:hover:not(:disabled) {
@@ -151,12 +285,13 @@ button:disabled {
 .btn-danger {
   background-color: #ef4444;
   color: white;
+  border: 2px solid #dc2626;
 }
 
 .btn-danger:hover:not(:disabled) {
   background-color: #dc2626;
   transform: translateY(-1px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
 }
 
 .btn-secondary {
@@ -195,33 +330,6 @@ button:disabled {
   margin-right: 6px;
   width: 16px;
   height: 16px;
-}
-
-.time-blocks {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
-}
-
-.time-block {
-  text-align: center;
-  flex: 1;
-  background-color: #f3f4f6;
-  padding: 10px;
-  border-radius: 8px;
-  margin: 0 6px;
-}
-
-.time-block-title {
-  font-size: 12px;
-  color: #6b7280;
-  margin-bottom: 5px;
-}
-
-.time-block-value {
-  font-size: 16px;
-  font-weight: 600;
-  color: #374151;
 }
 
 /* Settings View Styles */
@@ -362,20 +470,6 @@ h3 {
 .switch-mode-container {
   margin: 15px 0;
   text-align: center;
-}
-
-.btn-switch {
-  background-color: #8b5cf6;
-  color: white;
-  width: 100%;
-  padding: 12px 16px;
-  margin-top: 10px;
-}
-
-.btn-switch:hover:not(:disabled) {
-  background-color: #7c3aed;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .btn-standing {
