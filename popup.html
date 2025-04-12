@@ -14,28 +14,17 @@
           <h1>Standuck</h1>
         </div>
         <div class="header-buttons">
-          <button id="switchModeBtn" class="btn-switch" title="Switch Mode">
-            <svg
-              class="button-icon"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <path
-                d="M19 8l-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4zM6 12c0-3.31 2.69-6 6-6 1.01 0 1.97.25 2.8.7l1.46-1.46C15.03 4.46 13.57 4 12 4c-4.42 0-8 3.58-8 8H1l4 4 4-4H6z"
-              />
+          <button id="switchModeBtn" class="btn-switch">
+            <svg class="button-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 10H3"/>
+              <path d="M21 14H7"/>
+              <polyline points="21 10 17 6 17 14"/>
+              <polyline points="3 14 7 18 7 10"/>
             </svg>
           </button>
-          <button id="settingsBtn" class="btn-settings" title="Settings">
-            <svg
-              class="button-icon"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <path
-                d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.63-.07.94 0 .31.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"
-              />
+          <button id="settingsBtn" class="btn-settings">
+            <svg class="button-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.65.07-.97 0-.32-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98 0 .33.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65z"/>
             </svg>
           </button>
         </div>
@@ -73,59 +62,55 @@
       </div>
 
       <!-- Settings View -->
-      <div class="hidden" id="settingsView">
-        <h2>Timer Settings</h2>
+      <div id="settingsView" class="hidden">
+        <div class="settings-form">
+          <h3 class="section-title">Timer Settings</h3>
+          <div class="time-inputs-row">
+            <div class="form-group">
+              <label for="sitTimeInput">Sitting Time (min)</label>
+              <div class="number-input">
+                <button type="button" class="decrement">-</button>
+                <input type="number" id="sitTimeInput" min="1" max="120" value="45">
+                <button type="button" class="increment">+</button>
+              </div>
+            </div>
 
-        <div class="settings-group">
-          <label for="sitTimeInput">Sitting Time (minutes)</label>
-          <div class="number-input">
-            <button class="decrement" tabindex="-1">-</button>
-            <input id="sitTimeInput" max="120" min="1" type="number" value="45" />
-            <button class="increment" tabindex="-1">+</button>
-          </div>
-        </div>
-
-        <div class="settings-group">
-          <label for="standTimeInput">Standing Time (minutes)</label>
-          <div class="number-input">
-            <button class="decrement" tabindex="-1">-</button>
-            <input id="standTimeInput" max="60" min="1" type="number" value="20" />
-            <button class="increment" tabindex="-1">+</button>
-          </div>
-        </div>
-
-        <div class="settings-group">
-          <h3>Notification Settings</h3>
-
-          <div class="checkbox-group">
-            <label class="checkbox-label">
-              <input checked id="desktopNotificationsEnabled" type="checkbox" />
-              Enable Desktop Notifications
-            </label>
+            <div class="form-group">
+              <label for="standTimeInput">Standing Time (min)</label>
+              <div class="number-input">
+                <button type="button" class="decrement">-</button>
+                <input type="number" id="standTimeInput" min="1" max="60" value="20">
+                <button type="button" class="increment">+</button>
+              </div>
+            </div>
           </div>
 
-          <div class="checkbox-group">
-            <label class="checkbox-label">
-              <input checked id="browserPopupEnabled" type="checkbox" />
-              Enable Browser Popup Notifications
-            </label>
+          <h3 class="section-title">Notifications</h3>
+          <div class="notifications-section">
+            <div class="form-group">
+              <label class="toggle-label">
+                <input type="checkbox" id="desktopNotificationsEnabled">
+                <span>Desktop Notifications</span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="toggle-label">
+                <input type="checkbox" id="browserPopupEnabled">
+                <span>Browser Popup</span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="toggle-label">
+                <input type="checkbox" id="soundEnabled">
+                <span>Sound</span>
+              </label>
+            </div>
           </div>
 
-          <div class="checkbox-group">
-            <label class="checkbox-label">
-              <input checked id="soundEnabled" type="checkbox" />
-              Enable Sound Alerts
-            </label>
+          <div class="settings-buttons">
+            <button id="saveSettingsBtn" class="btn-primary">Save</button>
+            <button id="cancelSettingsBtn" class="btn-secondary">Cancel</button>
           </div>
-        </div>
-
-        <div class="settings-note">
-          Note: Changes will apply to the next cycle. Current timer won't be affected.
-        </div>
-
-        <div class="settings-buttons">
-          <button class="btn-primary" id="saveSettingsBtn">Save Settings</button>
-          <button class="btn-secondary" id="cancelSettingsBtn">Cancel</button>
         </div>
       </div>
     </div>

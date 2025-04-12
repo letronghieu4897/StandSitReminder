@@ -364,62 +364,131 @@ h3 {
   font-weight: 500;
 }
 
+.section-title {
+  font-size: 15px;
+  color: #111827;
+  margin: 0 0 16px 0;
+  font-weight: 600;
+  text-align: left;
+}
+
+.settings-form {
+  padding: 0;
+}
+
+.time-inputs-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  justify-content: space-between;
+  padding: 0;
+}
+
+.notifications-section {
+  padding: 0;
+  margin-bottom: 24px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+  flex: 1;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #111827;
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
 .number-input {
   display: flex;
   align-items: center;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.number-input button {
-  width: 40px;
-  height: 40px;
-  background-color: #f1f5f9;
-  color: #64748b;
-  font-size: 18px;
+  gap: 4px;
   padding: 0;
-  border-radius: 0;
-}
-
-.number-input button:hover {
-  background-color: #e2e8f0;
+  border-radius: 8px;
 }
 
 .number-input input {
-  flex: 1;
-  height: 40px;
-  border: none;
+  width: 50px;
   text-align: center;
+  padding: 8px 4px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  background: white;
+  color: #111827;
+}
+
+.number-input button {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f3f4f6;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #4b5563;
   font-size: 16px;
-  font-weight: 500;
-  outline: none;
+  font-weight: 600;
+  box-shadow: none;
+  padding: 0;
 }
 
-.checkbox-group {
-  padding: 5px 0;
+.number-input button:hover {
+  background-color: #e5e7eb;
+  transform: translateY(-1px);
 }
 
-.checkbox-label {
+.toggle-label {
   display: flex;
   align-items: center;
   cursor: pointer;
   user-select: none;
-  font-size: 14px;
-  color: #4b5563;
+  padding: 8px 0;
 }
 
-.checkbox-label input[type='checkbox'] {
-  margin-right: 10px;
-  width: 16px;
-  height: 16px;
+.toggle-label:last-child {
+  padding-bottom: 0;
+}
+
+.toggle-label input[type="checkbox"] {
+  margin-right: 12px;
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  border: 2px solid #d1d5db;
+  cursor: pointer;
+  accent-color: #2563eb;
+}
+
+.toggle-label span {
+  color: #111827;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .settings-buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   gap: 12px;
-  margin-top: 30px;
+  margin-top: 0;
+}
+
+.settings-buttons button {
+  flex: 1;
+  padding: 12px 0;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 .settings-note {
