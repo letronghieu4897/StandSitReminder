@@ -100,12 +100,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (result.isRunning && !result.isPaused) {
           isRunning = true;
+          isPaused = false;
           startPauseBtn.classList.add('paused');
           startPauseBtn.innerHTML = '<span class="button-icon">⏸</span>Pause';
           // Start interval for UI updates without starting a new timer
           interval = setInterval(timerTick, 1000);
         } else if (result.isRunning && result.isPaused) {
-          isRunning = true;
+          // This is either a paused timer or a completed timer waiting for user action
+          isRunning = false; // Set to false so the click handler will start it
           isPaused = true;
           startPauseBtn.classList.remove('paused');
           startPauseBtn.innerHTML = '<span class="button-icon">▶</span>Start';
@@ -125,15 +127,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Set up event listeners
   startPauseBtn.addEventListener('click', () => {
-    if (!isRunning) {
-      // Start the timer
+    if (!isRunning || isPaused) {
+      // Start or resume the timer
       isRunning = true;
+      isPaused = false;
       startPauseBtn.classList.add('paused');
       startPauseBtn.innerHTML = '<span class="button-icon">⏸</span>Pause';
       startTimer();
     } else {
       // Pause the timer
       isRunning = false;
+      isPaused = true;
       startPauseBtn.classList.remove('paused');
       startPauseBtn.innerHTML = '<span class="button-icon">▶</span>Start';
       pauseTimer();
@@ -515,12 +519,22 @@ function startTimer() {
   lastUpdateTime = Date.now();
   initialTime = isStanding ? STANDING_TIME : SITTING_TIME;
 
-  // Inform background script that timer is running
-  chrome.runtime.sendMessage({
-    action: 'timerStarted',
-    currentTime: currentTime,
-    isStanding: isStanding,
-  });
+  // Check if this is a resume after a timer completion
+  if (currentTime === initialTime) {
+    // This is a new timer or a resumption after completion
+    chrome.runtime.sendMessage({
+      action: 'timerStarted',
+      currentTime: currentTime,
+      isStanding: isStanding,
+    });
+  } else {
+    // This is resuming a paused timer
+    chrome.runtime.sendMessage({
+      action: 'timerResumed',
+      currentTime: currentTime,
+      isStanding: isStanding,
+    });
+  }
 
   saveState(true, false);
 }
@@ -538,7 +552,7 @@ function pauseTimer() {
     action: 'timerPaused',
   });
 
-  saveState(true, isPaused);
+  saveState(true, true);
 }
 
 // Reset timer
