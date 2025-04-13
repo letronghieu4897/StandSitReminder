@@ -12,6 +12,15 @@ body {
   padding: 0;
   color: #111827;
   line-height: 1.5;
+  transition: background-color 0.3s ease;
+}
+
+body.standing-mode {
+  background-color: rgba(30, 232, 105, 0.1);
+}
+
+body.sitting-mode {
+  background-color: rgba(255, 0, 0, 0.1);
 }
 
 .container {
@@ -159,7 +168,7 @@ header h1 {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 52px;
+  font-size: 75px;
   font-weight: 700;
   color: #ef4444;
   font-variant-numeric: tabular-nums;
@@ -212,7 +221,7 @@ header h1 {
 
 .controls {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 3fr 1fr;
   gap: 12px;
   margin: 12px 0;
 }
@@ -635,4 +644,34 @@ h3 {
 .standing-time-icon,
 .stat-value {
   /* These styles can be removed if you want to clean up the CSS file */
+}
+
+/* State Indicator */
+.state-indicator {
+  margin: 0 10px;
+}
+
+.state-text {
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.state-text.standing {
+  color: #1ee869;
+  background-color: rgba(30, 232, 105, 0.1);
+  border: 1px solid #1ee869;
+}
+
+.state-text.sitting {
+  color: #ff0000;
+  background-color: rgba(255, 0, 0, 0.1);
+  border: 1px solid #ff0000;
+}
+
+.hidden {
+  display: none !important;
 }

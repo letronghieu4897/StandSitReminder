@@ -29,6 +29,8 @@ let standTimeInput;
 let desktopNotificationsEnabledCheckbox;
 let browserPopupEnabledCheckbox;
 let soundEnabledCheckbox;
+let standingIcon;
+let sittingIcon;
 
 let switchModeBtn;
 let switchModeText;
@@ -58,6 +60,11 @@ document.addEventListener('DOMContentLoaded', function () {
   soundEnabledCheckbox = document.getElementById('soundEnabled');
   switchModeBtn = document.getElementById('switchModeBtn');
   switchModeText = document.getElementById('switchModeText');
+  standingIcon = document.getElementById('standingIcon');
+  sittingIcon = document.getElementById('sittingIcon');
+
+  // Set initial background color based on default state (sitting)
+  document.body.classList.add('sitting-mode');
 
   // Request notification permission right away
   requestNotificationPermission();
@@ -97,6 +104,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         updateTimer();
         updateProgressBar();
+        updateStateIcon();
 
         if (result.isRunning && !result.isPaused) {
           isRunning = true;
@@ -359,6 +367,7 @@ function syncWithBackground() {
             }
             updateTimer();
             updateProgressBar();
+            updateStateIcon();
           }
         }
       }
@@ -378,12 +387,27 @@ function updateTimer() {
   timerEl.textContent = formatTime(currentTime);
   if (isStanding) {
     timerEl.className = 'timer standing';
+    document.body.classList.add('standing-mode');
+    document.body.classList.remove('sitting-mode');
   } else {
     timerEl.className = 'timer sitting';
+    document.body.classList.add('sitting-mode');
+    document.body.classList.remove('standing-mode');
   }
 
   // Update switch button
   updateSwitchButton();
+}
+
+// Update state icon
+function updateStateIcon() {
+  if (isStanding) {
+    standingIcon.classList.remove('hidden');
+    sittingIcon.classList.add('hidden');
+  } else {
+    standingIcon.classList.add('hidden');
+    sittingIcon.classList.remove('hidden');
+  }
 }
 
 // Update progress bar
@@ -513,6 +537,7 @@ function timerTick() {
     // Update UI
     updateTimer();
     updateProgressBar();
+    updateStateIcon();
     updateSwitchButton();
     return;
   }
@@ -615,6 +640,7 @@ function switchMode() {
   // Update UI
   updateTimer();
   updateProgressBar();
+  updateStateIcon();
   updateSwitchButton();
 
   // Save state
