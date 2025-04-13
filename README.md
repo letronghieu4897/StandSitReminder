@@ -45,6 +45,8 @@ A friendly browser extension that helps you maintain a healthy work routine by r
 
 Standuck operates entirely in your browser and doesn't collect any personal data. All settings are stored locally.
 
+For detailed information about how we handle your data, please read our [Privacy Policy](PRIVACY_POLICY.md).
+
 ## Contributing
 
 Feel free to submit issues and enhancement requests!
