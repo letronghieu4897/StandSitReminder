@@ -7,7 +7,7 @@ body {
     Oxygen,
     Ubuntu,
     sans-serif;
-  width: 340px;
+  width: 360px;
   margin: 0;
   padding: 0;
   color: #111827;
@@ -16,27 +16,27 @@ body {
 
 .container {
   border-radius: 12px;
-  padding: 20px;
+  padding: 15px;
 }
 
 header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 22px;
+  margin-bottom: 15px;
 }
 
 header h1 {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 600;
   margin: 0;
   color: #111827;
 }
 
 .logo {
-  width: 76px;
-  height: 76px;
-  margin-right: 12px;
+  width: 50px;
+  height: 50px;
+  margin-right: 8px;
 }
 
 .title-container {
@@ -61,8 +61,8 @@ header h1 {
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
 }
 
 .btn-settings:hover {
@@ -81,8 +81,8 @@ header h1 {
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
 }
 
 .btn-switch:hover {
@@ -91,23 +91,23 @@ header h1 {
 }
 
 .btn-switch .button-icon {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   margin: 0;
   color: #4b5563;
 }
 
 .btn-settings .button-icon {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   margin: 0;
 }
 
 .timer-container {
   border-radius: 12px;
-  padding: 20px;
+  padding: 0;
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 0;
   position: relative;
 }
 
@@ -115,14 +115,14 @@ header h1 {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 15px 0;
+  margin: 0;
   position: relative;
 }
 
 .timer-circle {
   position: relative;
-  width: 150px;
-  height: 150px;
+  width: 160px;
+  height: 160px;
 }
 
 .timer-svg {
@@ -159,11 +159,11 @@ header h1 {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 48px;
+  font-size: 52px;
   font-weight: 700;
   color: #ef4444;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   background: none;
   border: none;
   box-shadow: none;
@@ -214,14 +214,14 @@ header h1 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin: 24px 0;
+  margin: 12px 0;
 }
 
 button {
   border: none;
-  padding: 12px 0;
+  padding: 10px 0;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   border-radius: 8px;
   transition: all 0.2s ease;
@@ -291,11 +291,11 @@ button:disabled {
 }
 
 .settings-preview {
-  font-size: 13px;
+  font-size: 12px;
   text-align: center;
   color: #64748b;
-  margin-top: 15px;
-  padding-top: 15px;
+  margin-top: 8px;
+  padding-top: 8px;
   border-top: 1px solid #e2e8f0;
 }
 
@@ -315,8 +315,8 @@ button:disabled {
 
 .button-icon {
   margin-right: 6px;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
 }
 
 /* Settings View Styles */
@@ -555,4 +555,84 @@ h3 {
 
 #startPauseBtn.paused .button-icon {
   content: "⏸";
+}
+
+/* Streak Counter - New Styles */
+.streak-counter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.streak-counter .streak-icon {
+  width: 32px;
+  height: 32px;
+  margin-right: 8px;
+  color: #ff9500;
+}
+
+.big-streak-count {
+  font-size: 32px;
+  font-weight: 700;
+  color: #ff9500;
+}
+
+/* Stats Bar - Aligned Streak & Standing Time */
+.stats-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 12px;
+  margin-bottom: 15px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+}
+
+/* Streak Counter Styles */
+.streak-counter .streak-icon {
+  width: 32px;
+  height: 32px;
+  margin-right: 8px;
+  color: #ff9500;
+}
+
+.big-streak-count {
+  font-size: 32px;
+  font-weight: 700;
+  color: #ff9500;
+}
+
+/* Remove standing time counter styles */
+.standing-time-counter,
+.standing-time-counter .standing-time-icon,
+.standing-time-value {
+  /* These styles can be removed */
+}
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+  .standing-time-box {
+    /* This can be removed */
+  }
+}
+
+/* Remove old styles that are no longer needed */
+.streak-container,
+.streak-info,
+.streak-title,
+.streak-progress,
+.streak-bar,
+.streak-progress-fill,
+.streak-labels,
+.stats-container,
+.stat-box,
+.standing-time-box,
+.standing-time-icon,
+.stat-value {
+  /* These styles can be removed if you want to clean up the CSS file */
 }

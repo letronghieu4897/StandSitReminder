@@ -14,6 +14,7 @@ A friendly browser extension that helps you maintain a healthy work routine by r
   - Desktop notifications
   - Browser popup alerts
   - Sound alerts
+- 🔥 Streak tracking to keep you motivated day after day
 
 ## How It Works
 
@@ -21,6 +22,7 @@ A friendly browser extension that helps you maintain a healthy work routine by r
 2. **Start Timer**: Click the Start button to begin your cycle
 3. **Get Notified**: Receive notifications when it's time to switch positions
 4. **Track Progress**: Visual timer shows your progress in the current position
+5. **Build Streaks**: Maintain your daily usage streak for extra motivation
 
 ## Default Settings
 
@@ -34,6 +36,12 @@ A friendly browser extension that helps you maintain a healthy work routine by r
 - **Reset**: Reset the current timer
 - **Switch Mode**: Quickly switch between sitting and standing modes
 - **Settings**: Customize your timings and notification preferences
+
+## Motivation Features
+
+- **Daily Streaks**: Track consecutive days of using the extension
+- **Progress Bar**: Visual indication of your current streak progress
+- **Daily Cycle Count**: See how many sit/stand cycles you've completed today
 
 ## Installation
 

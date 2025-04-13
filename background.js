@@ -33,6 +33,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
       // Update badge to show paused state
       chrome.action.setBadgeText({ text: '⏸' });
+      chrome.action.setBadgeBackgroundColor({ color: 'rgba(0, 0, 0, 0)' });
+      chrome.action.setBadgeTextColor({ color: '#000000' });
       break;
 
     case 'timerResumed':
@@ -173,58 +175,35 @@ function backgroundTimerTick() {
     return;
   }
 
-  // Load current state from storage for accurate sync
-  chrome.storage.local.get(
-    [
-      'currentTime',
-      'isStanding',
-      'isRunning',
-      'isPaused',
-      'lastUpdateTime',
-      'sittingTime',
-      'standingTime',
-    ],
-    function (result) {
-      if (result.isRunning && !result.isPaused) {
-        const now = Date.now();
-        const lastUpdate = result.lastUpdateTime || now;
-        const elapsedSeconds = Math.floor((now - lastUpdate) / 1000);
-
-        if (elapsedSeconds <= 0) return;
-
-        // Get timer settings with proper default values if missing
-        const sittingTime = (result.sittingTime || 45) * 60;
-        const standingTime = (result.standingTime || 20) * 60;
-
-        // Update current values from storage
-        currentTime = result.currentTime;
-        isStanding = result.isStanding;
-
-        // Calculate new time
-        if (currentTime <= elapsedSeconds) {
-          // Time's up, switch modes
-          isStanding = !isStanding;
-          currentTime = isStanding ? standingTime : sittingTime;
-
-          // Handle timer end
-          handleTimerEnd(isStanding, standingTime, sittingTime);
-        } else {
-          // Just update the time
-          currentTime -= elapsedSeconds;
-
-          // Update badge and storage
-          updateBadgeInBackground(currentTime, isStanding);
-
-          // Update storage
-          chrome.storage.local.set({
-            currentTime: currentTime,
-            isStanding: isStanding,
-            lastUpdateTime: now,
-          });
-        }
-      }
+  // Get the current timer state from storage
+  chrome.storage.local.get(['currentTime', 'isStanding', 'isPaused'], function (result) {
+    if (result.isPaused) {
+      return;
     }
-  );
+
+    let newTime = result.currentTime - 1;
+    const isStanding = result.isStanding || false;
+
+    if (newTime <= 0) {
+      // Timer ended, switch modes
+      const nextIsStanding = !isStanding;
+      chrome.storage.local.get(['standingTime', 'sittingTime'], function (timeResult) {
+        const standingTime = timeResult.standingTime || 20;
+        const sittingTime = timeResult.sittingTime || 45;
+        
+        handleTimerEnd(isStanding, standingTime, sittingTime);
+      });
+    } else {
+      // Update remaining time
+      chrome.storage.local.set({
+        currentTime: newTime,
+        lastUpdateTime: Date.now()
+      });
+
+      // Update badge
+      updateBadgeInBackground(newTime, isStanding);
+    }
+  });
 }
 
 // Handle timer end
@@ -240,7 +219,7 @@ function handleTimerEnd(isStanding, standingTime, sittingTime) {
     currentTime: isStanding ? standingTime : sittingTime,
     isStanding: isStanding,
     isPaused: true,
-    lastUpdateTime: null,
+    lastUpdateTime: null
   });
 
   // Update the badge to indicate the current state
@@ -249,48 +228,47 @@ function handleTimerEnd(isStanding, standingTime, sittingTime) {
   });
 
   chrome.action.setBadgeBackgroundColor({
-    color: isStanding ? '#1ee869' : '#2563eb',
+    color: isStanding ? '#1ee869' : '#ff0000',
+  });
+
+  chrome.action.setBadgeTextColor({
+    color: isStanding ? '#000000' : '#ffffff'
   });
 
   // Get notification preferences
   chrome.storage.local.get(
-    ['desktopNotificationsEnabled', 'browserPopupEnabled', 'soundEnabled'],
-    function (prefs) {
-      const title = isStanding ? 'Time to STAND UP!' : 'Time to SIT DOWN';
+    [
+      'desktopNotificationsEnabled',
+      'browserPopupEnabled',
+      'soundEnabled'
+    ],
+    function (result) {
+      // Prepare notification content
+      const title = isStanding ? 'Time to Sit!' : 'Time to Stand!';
       const message = isStanding
-        ? `Stand for ${Math.floor(standingTime / 60)} minutes`
-        : `Sit for ${Math.floor(sittingTime / 60)} minutes`;
+        ? `You've been standing for ${standingTime} minutes. Time to sit down!`
+        : `You've been sitting for ${sittingTime} minutes. Time to stand up!`;
 
-      try {
-        // Only show one type of notification - prioritize popup over desktop notification
-        if (prefs.browserPopupEnabled !== false) {
-          // Create browser popup notification
-          chrome.windows.create(
-            {
-              url: `notification-popup.html?isStanding=${isStanding}`,
-              type: 'popup',
-              width: 340,
-              height: 200,
-              focused: true,
-            },
-            function (window) {
-              console.log('Browser popup created with ID:', window.id);
-            }
-          );
-        } else if (prefs.desktopNotificationsEnabled !== false) {
-          // Only show desktop notification if browser popup is disabled
-          chrome.notifications.create('standSitReminder_' + Date.now(), {
-            type: 'basic',
-            iconUrl: 'images/icon128.png',
-            title: title,
-            message: message,
-            priority: 2,
-            requireInteraction: true,
-          });
-        }
-      } catch (error) {
-        console.error('Error creating notifications:', error);
+      // Desktop notification
+      if (result.desktopNotificationsEnabled) {
+        showDesktopNotification(title, message);
       }
+
+      // Browser popup
+      if (result.browserPopupEnabled) {
+        showBrowserPopup(title, message);
+      }
+
+      // Sound alert
+      if (result.soundEnabled) {
+        playAlertSound();
+      }
+
+      // Update badge color for the new state
+      updateBadgeInBackground(
+        isStanding ? sittingTime * 60 : standingTime * 60,
+        !isStanding
+      );
     }
   );
 }
@@ -306,7 +284,11 @@ function updateBadgeInBackground(time, standing) {
   });
 
   chrome.action.setBadgeBackgroundColor({
-    color: standing ? '#1ee869' : '#2563eb',
+    color: standing ? '#1ee869' : '#ff0000',
+  });
+  
+  chrome.action.setBadgeTextColor({
+    color: standing ? '#000000' : '#ffffff'
   });
 }
 
@@ -332,7 +314,7 @@ chrome.runtime.onInstalled.addListener(function () {
     lastUpdateTime: null,
     desktopNotificationsEnabled: true,
     browserPopupEnabled: true,
-    soundEnabled: true,
+    soundEnabled: true
   });
 });
 
@@ -354,3 +336,49 @@ chrome.runtime.onStartup.addListener(function () {
     }
   );
 });
+
+// Helper function for desktop notifications
+function showDesktopNotification(title, message) {
+  try {
+    chrome.notifications.create('standSitReminder_' + Date.now(), {
+      type: 'basic',
+      iconUrl: 'images/icon128.png',
+      title: title,
+      message: message,
+      priority: 2,
+      requireInteraction: true,
+    });
+  } catch (error) {
+    console.error('Error creating desktop notification:', error);
+  }
+}
+
+// Helper function for browser popup
+function showBrowserPopup(title, message) {
+  try {
+    chrome.windows.create(
+      {
+        url: `notification-popup.html?isStanding=${title.includes('Sit')}`,
+        type: 'popup',
+        width: 340,
+        height: 200,
+        focused: true,
+      },
+      function (window) {
+        console.log('Browser popup created with ID:', window.id);
+      }
+    );
+  } catch (error) {
+    console.error('Error creating browser popup:', error);
+  }
+}
+
+// Helper function for sound alerts
+function playAlertSound() {
+  try {
+    const audio = new Audio('sounds/alert.mp3');
+    audio.play().catch(e => console.error('Error playing sound:', e));
+  } catch (error) {
+    console.error('Error playing sound alert:', error);
+  }
+}

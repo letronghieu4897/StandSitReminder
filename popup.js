@@ -335,7 +335,7 @@ window.addEventListener('unload', function () {
   // Update the last update time when popup closes
   if (!isPaused) {
     chrome.storage.local.set({
-      lastUpdateTime: Date.now(),
+      lastUpdateTime: Date.now()
     });
   }
 });
@@ -477,37 +477,51 @@ function playAlertSound() {
 
 // Timer tick function
 function timerTick() {
-  if (currentTime > 0) {
-    currentTime--;
-    updateTimer();
-    updateProgressBar();
-    saveState();
-  } else {
-    // Switch between sitting and standing
-    isStanding = !isStanding;
-    currentTime = isStanding ? STANDING_TIME : SITTING_TIME;
-    initialTime = currentTime; // Update initial time for new cycle
-    updateTimer();
-    updateProgressBar();
+  if (currentTime <= 0) {
+    // Timer completed
+    
+    if (isStanding) {
+      // Switch to sitting
+      isStanding = false;
+      initialTime = SITTING_TIME;
+      currentTime = SITTING_TIME;
+      actionEl.textContent = 'Sitting';
+      actionEl.className = 'label sitting';
+    } else {
+      // Switch to standing
+      isStanding = true;
+      initialTime = STANDING_TIME;
+      currentTime = STANDING_TIME;
+      actionEl.textContent = 'Standing';
+      actionEl.className = 'label standing';
+    }
+
+    // Save the new state
     saveState();
 
-    // Show notification and play sound
-    const title = isStanding ? 'Time to STAND UP!' : 'Time to SIT DOWN';
-    const message = isStanding
-      ? `Stand for ${STANDING_TIME / 60} minutes`
-      : `Sit for ${SITTING_TIME / 60} minutes`;
+    // Show notification
+    showNotification(
+      isStanding ? 'Time to Stand!' : 'Time to Sit!',
+      isStanding
+        ? `You've been sitting for ${SITTING_TIME / 60} minutes. Time to stand up!`
+        : `You've been standing for ${STANDING_TIME / 60} minutes. Time to sit down!`
+    );
 
-    showNotification(title, message);
+    // Optionally play a sound
     playAlertSound();
 
-    // Also send message to background script
-    chrome.runtime.sendMessage({
-      action: 'timerEnded',
-      isStanding: isStanding,
-      standingTime: STANDING_TIME,
-      sittingTime: SITTING_TIME,
-    });
+    // Update UI
+    updateTimer();
+    updateProgressBar();
+    updateSwitchButton();
+    return;
   }
+
+  currentTime--;
+  
+  updateTimer();
+  updateProgressBar();
+  saveState();
 }
 
 // Start timer
@@ -546,7 +560,7 @@ function pauseTimer() {
   startPauseBtn.innerHTML = '<span class="button-icon">▶</span>Start';
   isPaused = true;
   lastUpdateTime = Date.now();
-
+  
   // Inform background script to pause
   chrome.runtime.sendMessage({
     action: 'timerPaused',
@@ -610,7 +624,7 @@ function switchMode() {
   chrome.runtime.sendMessage({
     action: 'modeSwitched',
     isStanding: isStanding,
-    currentTime: currentTime,
+    currentTime: currentTime
   });
 }
 
