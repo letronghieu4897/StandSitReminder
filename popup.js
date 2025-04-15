@@ -96,36 +96,37 @@ document.addEventListener('DOMContentLoaded', function () {
             // Time expired while popup was closed
             isStanding = !isStanding;
             currentTime = isStanding ? STANDING_TIME : SITTING_TIME;
+            // Since timer completed, it should not be running
+            isRunning = false;
           }
         }
 
         // Set initial time for progress bar
         initialTime = isStanding ? STANDING_TIME : SITTING_TIME;
 
+        // Update UI
         updateTimer();
         updateProgressBar();
         updateStateIcon();
 
+        // Handle UI update for running/paused state
         if (result.isRunning && !result.isPaused) {
+          // Timer is running
           isRunning = true;
           isPaused = false;
           startPauseBtn.classList.add('paused');
           startPauseBtn.innerHTML = '<span class="button-icon">⏸</span>Pause';
-          // Start interval for UI updates without starting a new timer
-          interval = setInterval(timerTick, 1000);
-        } else if (result.isRunning && result.isPaused) {
-          // This is either a paused timer or a completed timer waiting for user action
-          isRunning = false; // Set to false so the click handler will start it
-          isPaused = true;
-          startPauseBtn.classList.remove('paused');
-          startPauseBtn.innerHTML = '<span class="button-icon">▶</span>Start';
           resetBtn.disabled = false;
+          
+          // Create a new interval with our direct function
+          startTimer();
         } else {
-          isRunning = false;
-          isPaused = false;
-          resetBtn.disabled = true;
+          // Timer is not running or is paused
+          isRunning = result.isRunning || false;
+          isPaused = result.isPaused || false;
           startPauseBtn.classList.remove('paused');
           startPauseBtn.innerHTML = '<span class="button-icon">▶</span>Start';
+          resetBtn.disabled = !isRunning;
         }
       } else {
         resetBtn.disabled = true;
@@ -350,29 +351,43 @@ window.addEventListener('unload', function () {
 
 // Sync with background timer
 function syncWithBackground() {
-  if (!isRunning || isPaused) {
-    chrome.storage.local.get(
-      ['currentTime', 'isStanding', 'isRunning', 'isPaused'],
-      function (result) {
-        if (result.isRunning && !result.isPaused) {
-          // Only update the UI if values are different
-          if (result.currentTime !== currentTime || result.isStanding !== isStanding) {
-            currentTime = result.currentTime;
-            isStanding = result.isStanding;
-            // Update initialTime when mode changes
-            if (isStanding && initialTime === SITTING_TIME) {
-              initialTime = STANDING_TIME;
-            } else if (!isStanding && initialTime === STANDING_TIME) {
-              initialTime = SITTING_TIME;
-            }
-            updateTimer();
-            updateProgressBar();
-            updateStateIcon();
-          }
+  // Skip sync if we're in the process of running our own timer
+  if (interval) return;
+  
+  chrome.storage.local.get(
+    ['currentTime', 'isStanding', 'isRunning', 'isPaused'],
+    function (result) {
+      // Check if there are actually changes to apply
+      if (result.currentTime !== currentTime || result.isStanding !== isStanding || 
+          result.isRunning !== isRunning || result.isPaused !== isPaused) {
+        
+        // Update local state
+        currentTime = result.currentTime;
+        isStanding = result.isStanding;
+        isRunning = result.isRunning;
+        isPaused = result.isPaused;
+        
+        // Update initialTime when mode changes
+        initialTime = isStanding ? STANDING_TIME : SITTING_TIME;
+        
+        // Update UI
+        updateTimer();
+        updateProgressBar();
+        updateStateIcon();
+        
+        // Update button states
+        if (isRunning && !isPaused) {
+          startPauseBtn.classList.add('paused');
+          startPauseBtn.innerHTML = '<span class="button-icon">⏸</span>Pause';
+          resetBtn.disabled = false;
+        } else {
+          startPauseBtn.classList.remove('paused');
+          startPauseBtn.innerHTML = '<span class="button-icon">▶</span>Start';
+          resetBtn.disabled = !isRunning;
         }
       }
-    );
-  }
+    }
+  );
 }
 
 // Format time function
@@ -503,42 +518,40 @@ function playAlertSound() {
 function timerTick() {
   if (currentTime <= 0) {
     // Timer completed
+    clearInterval(interval);
+    interval = null;
     
-    if (isStanding) {
-      // Switch to sitting
-      isStanding = false;
-      initialTime = SITTING_TIME;
-      currentTime = SITTING_TIME;
-      actionEl.textContent = 'Sitting';
-      actionEl.className = 'label sitting';
-    } else {
-      // Switch to standing
-      isStanding = true;
-      initialTime = STANDING_TIME;
-      currentTime = STANDING_TIME;
-      actionEl.textContent = 'Standing';
-      actionEl.className = 'label standing';
-    }
-
-    // Save the new state
-    saveState();
-
-    // Show notification
-    showNotification(
-      isStanding ? 'Time to Stand!' : 'Time to Sit!',
-      isStanding
-        ? `You've been sitting for ${SITTING_TIME / 60} minutes. Time to stand up!`
-        : `You've been standing for ${STANDING_TIME / 60} minutes. Time to sit down!`
-    );
-
-    // Optionally play a sound
-    playAlertSound();
-
+    // Get current state before switching
+    const wasStanding = isStanding;
+    
+    // Switch the mode but don't restart automatically
+    isStanding = !isStanding;
+    initialTime = isStanding ? STANDING_TIME : SITTING_TIME;
+    currentTime = initialTime;
+    
     // Update UI
     updateTimer();
     updateProgressBar();
     updateStateIcon();
     updateSwitchButton();
+    
+    // Reset buttons to start state
+    startPauseBtn.classList.remove('paused');
+    startPauseBtn.innerHTML = '<span class="button-icon">▶</span>Start';
+    isRunning = false;
+    isPaused = false;
+    
+    // Save state as not running
+    saveState(false, false);
+
+    // Inform background script that timer ended
+    chrome.runtime.sendMessage({
+      action: 'timerEnded',
+      isStanding: wasStanding, // Send the mode that just completed
+      standingTime: STANDING_TIME / 60,
+      sittingTime: SITTING_TIME / 60
+    });
+    
     return;
   }
 
@@ -551,13 +564,69 @@ function timerTick() {
 
 // Start timer
 function startTimer() {
+  // First stop any existing intervals
   clearInterval(interval);
-  interval = setInterval(timerTick, 1000);
-  resetBtn.disabled = false;
+  interval = null;
+  
+  console.log('Starting timer with mode:', isStanding ? 'Standing' : 'Sitting');
+  
+  // Set states
+  isRunning = true;
   isPaused = false;
   lastUpdateTime = Date.now();
   initialTime = isStanding ? STANDING_TIME : SITTING_TIME;
+  
+  // Create a new interval with direct function definition
+  interval = setInterval(function() {
+    if (currentTime <= 0) {
+      // Timer completed
+      clearInterval(interval);
+      interval = null;
+      
+      // Get current state before switching
+      const wasStanding = isStanding;
+      
+      // Switch the mode but don't restart automatically
+      isStanding = !isStanding;
+      initialTime = isStanding ? STANDING_TIME : SITTING_TIME;
+      currentTime = initialTime;
+      
+      // Update UI
+      updateTimer();
+      updateProgressBar();
+      updateStateIcon();
+      updateSwitchButton();
+      
+      // Reset buttons to start state
+      startPauseBtn.classList.remove('paused');
+      startPauseBtn.innerHTML = '<span class="button-icon">▶</span>Start';
+      isRunning = false;
+      isPaused = false;
+      
+      // Save state as not running
+      saveState(false, false);
 
+      // Inform background script that timer ended - let background handle notifications
+      chrome.runtime.sendMessage({
+        action: 'timerEnded',
+        isStanding: wasStanding, // Send the mode that just completed
+        standingTime: STANDING_TIME / 60,
+        sittingTime: SITTING_TIME / 60
+      });
+      
+      return;
+    }
+
+    currentTime--;
+    
+    updateTimer();
+    updateProgressBar();
+    saveState(true, false);
+  }, 1000);
+  
+  // Enable reset button
+  resetBtn.disabled = false;
+  
   // Check if this is a resume after a timer completion
   if (currentTime === initialTime) {
     // This is a new timer or a resumption after completion
@@ -627,6 +696,15 @@ function saveState(isRunning = true, isPaused = false) {
 
 function switchMode() {
   console.log('Switching mode from:', isStanding ? 'Standing' : 'Sitting');
+  
+  // First, completely stop any running timer
+  const wasRunning = isRunning && !isPaused;
+  
+  // Always clear the interval to prevent multiple intervals
+  if (interval) {
+    clearInterval(interval);
+    interval = null;
+  }
 
   // Toggle standing/sitting mode
   isStanding = !isStanding;
@@ -643,15 +721,23 @@ function switchMode() {
   updateStateIcon();
   updateSwitchButton();
 
-  // Save state
-  saveState(true, isPaused);
+  // Store the new state in storage, but don't automatically start
+  saveState(false, false);
 
-  // Inform background script
+  // Inform background script of the mode switch
   chrome.runtime.sendMessage({
     action: 'modeSwitched',
     isStanding: isStanding,
-    currentTime: currentTime
+    currentTime: currentTime,
+    isRunning: false,
+    isPaused: false
   });
+  
+  // Update the UI to reflect the stopped state
+  isRunning = false;
+  isPaused = false;
+  startPauseBtn.classList.remove('paused');
+  startPauseBtn.innerHTML = '<span class="button-icon">▶</span>Start';
 }
 
 function updateSwitchButton() {

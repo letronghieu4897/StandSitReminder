@@ -4,12 +4,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Get query parameters
   const urlParams = new URLSearchParams(window.location.search);
-  const isStanding = urlParams.get('isStanding') === 'true';
+  const shouldStand = urlParams.get('shouldStand') === 'true';
 
-  console.log('Notification popup loaded, isStanding:', isStanding);
+  console.log('Notification popup loaded, shouldStand:', shouldStand);
 
   // Apply appropriate classes to container
-  if (isStanding) {
+  if (shouldStand) {
     container.classList.add('standing-container');
   } else {
     container.classList.add('sitting-container');
@@ -17,8 +17,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Create and insert action text
   const actionText = document.createElement('div');
-  actionText.className = isStanding ? 'action-text standing-text' : 'action-text sitting-text';
-  actionText.textContent = isStanding ? 'STAND UP!' : 'SIT DOWN';
+  actionText.className = shouldStand ? 'action-text standing-text' : 'action-text sitting-text';
+  actionText.textContent = shouldStand ? 'STAND UP!' : 'SIT DOWN';
   messageContainer.appendChild(actionText);
 
   // Add hint text

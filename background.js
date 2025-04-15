@@ -89,12 +89,21 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       // Update background state
       isStanding = request.isStanding;
       currentTime = request.currentTime;
+      isRunning = request.isRunning || false;
+      isPaused = request.isPaused || false;
+
+      // If timer is not running, clear any existing alarm
+      if (!isRunning || isPaused) {
+        chrome.alarms.clear('standsitTimer');
+      }
 
       // Update storage
       chrome.storage.local.set({
         isStanding: isStanding,
         currentTime: currentTime,
-        lastUpdateTime: Date.now(),
+        isRunning: isRunning,
+        isPaused: isPaused,
+        lastUpdateTime: isRunning && !isPaused ? Date.now() : null,
       });
 
       // Update badge
@@ -178,19 +187,23 @@ function backgroundTimerTick() {
   // Get the current timer state from storage
   chrome.storage.local.get(['currentTime', 'isStanding', 'isPaused'], function (result) {
     if (result.isPaused) {
+      console.log('Timer is paused in storage, skipping tick');
       return;
     }
 
     let newTime = result.currentTime - 1;
     const isStanding = result.isStanding || false;
 
+    console.log(`Timer tick: ${newTime} seconds left, mode: ${isStanding ? 'STANDING' : 'SITTING'}`);
+
     if (newTime <= 0) {
-      // Timer ended, switch modes
-      const nextIsStanding = !isStanding;
+      // Timer ended, don't restart automatically
+      console.log('Timer reached zero, ending timer');
       chrome.storage.local.get(['standingTime', 'sittingTime'], function (timeResult) {
         const standingTime = timeResult.standingTime || 20;
         const sittingTime = timeResult.sittingTime || 45;
         
+        // Handle timer completion
         handleTimerEnd(isStanding, standingTime, sittingTime);
       });
     } else {
@@ -208,69 +221,82 @@ function backgroundTimerTick() {
 
 // Handle timer end
 function handleTimerEnd(isStanding, standingTime, sittingTime) {
-  console.log('Timer ended, creating notification');
+  console.log('Timer ended for state:', isStanding ? 'STANDING' : 'SITTING');
 
-  // Pause the timer while notification is showing
-  isPaused = true;
+  // Stop the timer completely when it ends
+  isRunning = false;
+  isPaused = false;
   chrome.alarms.clear('standsitTimer');
 
-  // Update storage to reflect paused state
+  // The isStanding parameter contains the state that just completed
+  // Calculate next mode values - opposite of what just completed
+  let nextTime = isStanding ? sittingTime * 60 : standingTime * 60;
+  let nextMode = !isStanding;
+
+  // Update storage to reflect stopped state with next mode values ready
   chrome.storage.local.set({
-    currentTime: isStanding ? standingTime : sittingTime,
-    isStanding: isStanding,
-    isPaused: true,
+    currentTime: nextTime,
+    isStanding: nextMode,
+    isRunning: false,
+    isPaused: false,
     lastUpdateTime: null
-  });
+  }, function() {
+    // After storage update completes, prepare notifications
+    console.log('Storage updated, showing notifications for state change');
+    
+    // Get notification preferences
+    chrome.storage.local.get(
+      [
+        'desktopNotificationsEnabled',
+        'browserPopupEnabled',
+        'soundEnabled'
+      ],
+      function (result) {
+        // Determine notification content based on which timer just ended
+        let title, message;
+        
+        if (isStanding) {
+          // Standing timer just ended - tell user to sit down
+          title = 'Time to Sit Down!';
+          message = `You've been standing for ${standingTime} minutes. Time to sit down!`;
+        } else {
+          // Sitting timer just ended - tell user to stand up
+          title = 'Time to Stand Up!';
+          message = `You've been sitting for ${sittingTime} minutes. Time to stand up!`;
+        }
 
-  // Update the badge to indicate the current state
-  chrome.action.setBadgeText({
-    text: isStanding ? 'UP!' : 'SIT',
-  });
+        console.log('Showing notification:', title, message);
 
-  chrome.action.setBadgeBackgroundColor({
-    color: isStanding ? '#1ee869' : '#ff0000',
-  });
+        // Desktop notification
+        if (result.desktopNotificationsEnabled) {
+          showDesktopNotification(title, message);
+        }
 
-  chrome.action.setBadgeTextColor({
-    color: isStanding ? '#000000' : '#ffffff'
-  });
+        // Browser popup
+        if (result.browserPopupEnabled) {
+          showBrowserPopup(title, message);
+        }
 
-  // Get notification preferences
-  chrome.storage.local.get(
-    [
-      'desktopNotificationsEnabled',
-      'browserPopupEnabled',
-      'soundEnabled'
-    ],
-    function (result) {
-      // Prepare notification content
-      const title = isStanding ? 'Time to Sit!' : 'Time to Stand!';
-      const message = isStanding
-        ? `You've been standing for ${standingTime} minutes. Time to sit down!`
-        : `You've been sitting for ${sittingTime} minutes. Time to stand up!`;
+        // Sound alert
+        if (result.soundEnabled) {
+          playAlertSound();
+        }
+        
+        // Update the badge with a notification indicator
+        chrome.action.setBadgeText({
+          text: nextMode ? 'STND' : 'SIT',
+        });
 
-      // Desktop notification
-      if (result.desktopNotificationsEnabled) {
-        showDesktopNotification(title, message);
+        chrome.action.setBadgeBackgroundColor({
+          color: nextMode ? '#1ee869' : '#ff0000',
+        });
+
+        chrome.action.setBadgeTextColor({
+          color: nextMode ? '#000000' : '#ffffff'
+        });
       }
-
-      // Browser popup
-      if (result.browserPopupEnabled) {
-        showBrowserPopup(title, message);
-      }
-
-      // Sound alert
-      if (result.soundEnabled) {
-        playAlertSound();
-      }
-
-      // Update badge color for the new state
-      updateBadgeInBackground(
-        isStanding ? sittingTime * 60 : standingTime * 60,
-        !isStanding
-      );
-    }
-  );
+    );
+  });
 }
 
 // Update badge on extension icon
@@ -356,16 +382,20 @@ function showDesktopNotification(title, message) {
 // Helper function for browser popup
 function showBrowserPopup(title, message) {
   try {
+    // Determine which action to prompt based on the notification title
+    const shouldStand = title.includes('Stand Up');
+    
+    // Create the popup with correct parameters
     chrome.windows.create(
       {
-        url: `notification-popup.html?isStanding=${title.includes('Sit')}`,
+        url: `notification-popup.html?shouldStand=${shouldStand}`,
         type: 'popup',
         width: 340,
         height: 200,
         focused: true,
       },
       function (window) {
-        console.log('Browser popup created with ID:', window.id);
+        console.log('Browser popup created with ID:', window.id, 'shouldStand=', shouldStand);
       }
     );
   } catch (error) {
